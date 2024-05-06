@@ -1,15 +1,17 @@
 name: ansi_richtext_parser
 description: "A new Flutter package project."
 version: 0.0.1
-homepage:
+# homepage:
 
 environment:
-  sdk: '>=3.2.3 <4.0.0'
+  sdk: ">=3.2.3 <4.0.0"
   flutter: ">=1.17.0"
 
 dependencies:
   flutter:
     sdk: flutter
+
+  petitparser:
 
 dev_dependencies:
   flutter_test:
