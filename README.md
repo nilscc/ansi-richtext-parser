@@ -1,4 +1,6 @@
-## Features
+[![Flutter Tests](https://github.com/nilscc/ansi-richtext-parser/actions/workflows/flutter.yaml/badge.svg?branch=main)](https://github.com/nilscc/ansi-richtext-parser/actions/workflows/flutter.yaml)
+
+### Features
 
 Parse [ANSI colors] and render them as [Flutter Text] with foreground and background color information added.
 
