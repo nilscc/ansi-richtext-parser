@@ -1,14 +1,6 @@
-# Taken (and adjusted) from: https://github.com/SourceHorizon/logger/blob/main/.github/workflows/dart.yml
+# With action from: https://github.com/marketplace/actions/flutter-action
 
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
-# See documentation here:
-# https://github.com/dart-lang/setup-dart/blob/main/README.md
-
-name: Dart
+name: Flutter Tests
 
 on:
   push:
@@ -24,8 +16,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: dart-lang/setup-dart@v1
-
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2.16.0
+        with:
+          channel: stable
+  
       - name: Install dependencies
         run: flutter pub get
 
