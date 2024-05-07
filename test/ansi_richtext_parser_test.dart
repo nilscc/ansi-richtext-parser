@@ -1,84 +1,64 @@
-import 'dart:ffi';
-import 'dart:math';
-
+import 'package:ansi_richtext_parser/ansi_richtext_parser/color.dart';
+import 'package:ansi_richtext_parser/ansi_richtext_parser/colorscheme.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:ansi_richtext_parser/ansi_richtext_parser.dart';
-import 'package:petitparser/core.dart';
 
 void main() {
-  final colorscheme = AnsiColorscheme();
+  final colorscheme = colorschemeVSC;
 
   test('Parse plain text', () {
     const input = 'asdkj238sdknvsdkjwskef';
     final output = parse(input, colorscheme);
-    expect(output.data, equals(input));
+    expect(output?.data, equals(input));
   });
 
-  // group(("Parser tests"), () {
-  // test("Color parser", () {
-  //   // helper function
-  //   parse(val) => AnsiColor().build().parse(val);
+  const rawInput =
+      "\u001b[96m29/\u001b[36m40 | Filter: \u001b[93mrelay | Sort: \u001b[97m~name";
 
-  //   expect(parse('\x1B[30m').value, equals([30, null]));
-  //   expect(parse('\x1B[30;40m').value, equals([30, 40]));
-  //   expect(parse('\x1B[50;200m') is Failure, isTrue);
-  //   expect(parse('\x1B[0;0m') is Failure, isTrue);
-  //   expect(parse('\x1B[96m').value, equals([96, null]));
-  //   expect(parse('\x1B[96;102m').value, equals([96, 102]));
-  //   expect(parse('\x1B[;102m') is Failure, isTrue);
-  //   expect(parse('\x1B[96;m') is Failure, isTrue);
-  // });
-
-  group("Ansi parser", () {
-    final parser = AnsiParser().build();
-    parse(val) => parser.parse(val);
-
-    test('No colors', () {
-      final result = parse("abc");
-      expect(result is Success, isTrue);
-      expect(result.value.length, equals(1));
-      expect(result.value[0], equals("abc"));
-    });
-
-    test('FG color', () {
-      final result = parse("\x1B[30m");
-      expect(result is Success, isTrue);
-      expect(result.value.length, equals(1));
-      expect(result.value[0], equals(AnsiColor(30)));
-    });
-
-    test('FG + BG color', () {
-      final result = parse("\x1B[30;40m");
-      expect(result is Success, isTrue);
-      expect(result.value.length, equals(1));
-      expect(result.value[0], equals(AnsiColor(30, bgColor: 40)));
-    });
-
-    test('Mixed colors and text', () {
-      final result = parse("\u001b[96m29/\u001b[36m40");
-      expect(result is Success, isTrue);
-      expect(result.value.length, equals(4));
-      expect(result.value[0], equals(AnsiColor(96))); // first token
-      expect(result.value[1], equals("29/")); // first string
-      expect(result.value[2], equals(AnsiColor(36))); // second token
-      expect(result.value[3], equals("40")); // second string
-    });
+  test("Get plain text, ignore color information", () {
+    final output = parse(rawInput, colorscheme);
+    expect(output, isNotNull);
+    expect(output!.textSpan?.toPlainText(),
+        equals("29/40 | Filter: relay | Sort: ~name"));
   });
 
-  group("Complex inputs", () {
-    const raw_input =
-        "\u001b[96m29/\u001b[36m40 | Filter: \u001b[93mrelay | Sort: \u001b[97m~name";
+  test("Check created text spans", () {
+    final output = parse(rawInput, colorscheme);
+    expect(output, isNotNull);
+    expect(output!.textSpan, isNotNull);
+    expect((output.textSpan as TextSpan).children?.length, equals(4));
 
-    test(
-      "Get plain text, ignore color information",
-      skip: true, // TODO...
-      () {
-        final output = parse(raw_input, colorscheme);
-        expect(output.textSpan!.toPlainText(),
-            "29/36 | Filter: relay | Sort: name");
-      },
-    );
+    // helper for iterating children
+    child(idx) => (output.textSpan as TextSpan).children![idx] as TextSpan;
+
+    expect(child(0).style?.color, equals(colorscheme.color(AnsiColor(96))));
+    expect(child(0).text, equals("29/"));
+
+    expect(child(1).style?.color, equals(colorscheme.color(AnsiColor(36))));
+    expect(child(1).text, equals("40 | Filter: "));
+
+    expect(child(2).style?.color, equals(colorscheme.color(AnsiColor(93))));
+    expect(child(2).text, equals("relay | Sort: "));
+
+    expect(child(3).style?.color, equals(colorscheme.color(AnsiColor(97))));
+    expect(child(3).text, equals("~name"));
+  });
+
+  test("Check color/style reset", () {
+    const input = "\x1B[36;46mTest\x1B[0m...";
+    final output = parse(input, colorscheme);
+    expect(output, isNotNull);
+    expect(output!.textSpan, isNotNull);
+    expect((output.textSpan as TextSpan).children?.length, equals(2));
+
+    child(idx) => (output.textSpan as TextSpan).children![idx] as TextSpan;
+
+    expect(child(0).style?.color,
+        equals(colorscheme.color(AnsiColor(36, bgColor: 46))));
+    expect(child(0).text, equals("Test"));
+
+    expect(child(1).style, isNull);
+    expect(child(1).text, equals("..."));
   });
 }
