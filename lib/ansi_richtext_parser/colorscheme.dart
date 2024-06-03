@@ -331,7 +331,7 @@ final _brightWhites = [
   (255, 255, 255),
 ];
 
-Color _toColor(tuple, {int alpha = 1}) {
+Color _toColor(tuple, {int alpha = 255}) {
   var (int r, int g, int b) = tuple;
   return Color.fromARGB(alpha, r, g, b);
 }
